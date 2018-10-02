@@ -45,7 +45,7 @@ defmodule JobWebserver.JobServer do
 
   def handle_info(:perform, state) do
     IO.puts("firing job!")
-    {:noreply, state}
+    {:stop, :normal, state}
   end
 
   defp schedule_job(fire_time) do
