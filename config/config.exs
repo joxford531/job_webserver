@@ -18,6 +18,17 @@ config :libcluster,
     ]
   ]
 
+config :job_webserver, :ecto_repos, [JobWebserver.Repo]
+
+config :job_webserver, JobWebserver.Repo,
+  adapter: Ecto.Adapters.MySQL,
+  database: "job_dev",
+  username: "root",
+  password: "mysql",
+  hostname: "localhost",
+  pool_size: 10
+
+
 import_config "#{Mix.env()}.exs"
 # This configuration is loaded before any dependency and is restricted
 # to this project. If another project depends on this project, this

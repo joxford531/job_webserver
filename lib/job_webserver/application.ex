@@ -13,6 +13,7 @@ defmodule JobWebserver.Application do
         [Application.get_env(:libcluster, :topologies), [name: __MODULE__.ClusterSupervisor]]
       },
       JobWebserver.Cache,
+      JobWebserver.Repo,
       Plug.Adapters.Cowboy.child_spec(scheme: :http, plug: JobWebserver.Router, options: [port: Application.fetch_env!(:job_webserver, :http_port)])
     ]
     opts = [strategy: :one_for_one, name: JobWebserver.Supervisor]

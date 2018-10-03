@@ -25,7 +25,7 @@ defmodule JobWebserver.Router do
       |> JobWebserver.Cache.server_process(body["time"])
 
     case result do
-      {:error, reason} -> handle_job_error(conn, result)
+      {:error, _} -> handle_job_error(conn, result)
       _ -> handle_job_created(conn, result)
     end
 
