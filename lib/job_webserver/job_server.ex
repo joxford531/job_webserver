@@ -1,20 +1,21 @@
 defmodule JobWebserver.JobServer do
   use GenServer
 
-  def start_link({job_name, fire_time}) do
-    IO.puts("Starting Job - #{job_name}")
-    Swarm.register_name({__MODULE__, job_name}, __MODULE__, :start, [{job_name, fire_time}])
+  def start_link({job_name, %{"site" => _, "unitCode" => _, "time" => _, "command" => _} = job}) do
+    store_job(job_name, job)
+    Swarm.register_name({__MODULE__, job_name}, __MODULE__, :start, [{job_name, job}])
   end
 
-  def start({job_name, fire_time}) do
-    GenServer.start_link(__MODULE__, {job_name, fire_time})
+  def start({job_name, job}) do
+    GenServer.start_link(__MODULE__, {job_name, job})
   end
 
-  def init({job_name, fire_time}) do
-    schedule_job(fire_time)
+  def init({job_name, job}) do
+    schedule_job(job_name, job)
+    IO.puts("init callback")
     {
       :ok,
-      {job_name, fire_time}
+      {job_name, job["time"]}
     }
   end
 
@@ -43,17 +44,35 @@ defmodule JobWebserver.JobServer do
     {:stop, :shutdown, state}
   end
 
-  def handle_info(:perform, state) do
+  def handle_info(:perform, {job_name, fire_time}) do
     IO.puts("firing job!")
-    {:stop, :normal, state}
+
+    JobWebserver.Database.find_job(job_name)
+    |> JobWebserver.Database.delete_job()
+
+    {:stop, :normal, {job_name, fire_time}}
   end
 
-  defp schedule_job(fire_time) do
+  defp schedule_job(job_name, %{"site" => _, "unitCode" => _, "time" => _, "command" => _} = job) do
+    IO.puts("Scheduling Job - #{job_name}")
+
     send_after =
-      fire_time
+      job["time"]
       |> Timex.parse!("{ISO:Extended}")
       |> Timex.diff(Timex.now, :milliseconds)
 
     Process.send_after(self(), :perform, send_after)
+  end
+
+  defp store_job(job_name, %{"site" => _, "unitCode" => _, "time" => _, "command" => _} = job) do
+    IO.puts("Persist Job to DB - #{job_name}")
+
+    %JobWebserver.Job{
+      trigger_name: job_name,
+      site: job["site"],
+      unit_code: job["unitCode"],
+      command: job["command"],
+      time: Timex.parse!(job["time"], "{ISO:Extended}")
+    } |> JobWebserver.Database.store_job()
   end
 end

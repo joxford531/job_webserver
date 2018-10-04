@@ -22,7 +22,7 @@ defmodule JobWebserver.Router do
 
     result =
       hash_job_name(body)
-      |> JobWebserver.Cache.server_process(body["time"])
+      |> JobWebserver.Cache.server_process(body)
 
     case result do
       {:error, _} -> handle_job_error(conn, result)
