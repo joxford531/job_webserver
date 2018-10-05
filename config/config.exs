@@ -6,7 +6,7 @@ config :job_webserver, http_port: 4000
 
 config :logger, level: :debug
 
-config :swarm, node_blacklist: ["debug@127.0.0.1"]
+config :swarm, node_blacklist: ["debug@127.0.0.1"], debug: false
 
 config :libcluster,
   topologies: [

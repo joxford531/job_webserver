@@ -14,7 +14,8 @@ defmodule JobWebserver.Application do
       },
       JobWebserver.Cache,
       JobWebserver.Repo,
-      Plug.Adapters.Cowboy.child_spec(scheme: :http, plug: JobWebserver.Router, options: [port: Application.fetch_env!(:job_webserver, :http_port)])
+      Plug.Adapters.Cowboy.child_spec(scheme: :http, plug: JobWebserver.Router, options: [port: Application.fetch_env!(:job_webserver, :http_port)]),
+      {JobWebserver.ReadDbJobs, []}
     ]
     opts = [strategy: :one_for_one, name: JobWebserver.Supervisor]
     Supervisor.start_link(children, opts)

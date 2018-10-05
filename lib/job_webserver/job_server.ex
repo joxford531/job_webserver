@@ -2,7 +2,6 @@ defmodule JobWebserver.JobServer do
   use GenServer
 
   def start_link({job_name, %{"site" => _, "unitCode" => _, "time" => _, "command" => _} = job}) do
-    store_job(job_name, job)
     Swarm.register_name({__MODULE__, job_name}, __MODULE__, :start, [{job_name, job}])
   end
 
@@ -11,8 +10,8 @@ defmodule JobWebserver.JobServer do
   end
 
   def init({job_name, job}) do
-    schedule_job(job_name, job)
-    IO.puts("init callback")
+    schedule_job(job)
+    store_job(job_name, job)
     {
       :ok,
       {job_name, job["time"]}
@@ -37,6 +36,7 @@ defmodule JobWebserver.JobServer do
 
   def handle_call({:swarm, :begin_handoff}, _from, state) do
     IO.puts("Begin handoff")
+
     {:reply, {:resume, state}, state}
   end
 
@@ -45,7 +45,7 @@ defmodule JobWebserver.JobServer do
   end
 
   def handle_info(:perform, {job_name, fire_time}) do
-    IO.puts("firing job!")
+    IO.puts("firing job! - #{job_name}")
 
     JobWebserver.Database.find_job(job_name)
     |> JobWebserver.Database.delete_job()
@@ -53,9 +53,7 @@ defmodule JobWebserver.JobServer do
     {:stop, :normal, {job_name, fire_time}}
   end
 
-  defp schedule_job(job_name, %{"site" => _, "unitCode" => _, "time" => _, "command" => _} = job) do
-    IO.puts("Scheduling Job - #{job_name}")
-
+  defp schedule_job(%{"site" => _, "unitCode" => _, "time" => _, "command" => _} = job) do
     send_after =
       job["time"]
       |> Timex.parse!("{ISO:Extended}")
@@ -65,8 +63,6 @@ defmodule JobWebserver.JobServer do
   end
 
   defp store_job(job_name, %{"site" => _, "unitCode" => _, "time" => _, "command" => _} = job) do
-    IO.puts("Persist Job to DB - #{job_name}")
-
     %JobWebserver.Job{
       trigger_name: job_name,
       site: job["site"],
