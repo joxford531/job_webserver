@@ -4,7 +4,7 @@ use Mix.Config
 
 config :job_webserver, http_port: 4000
 
-config :logger, level: :debug
+config :logger, level: :info
 
 config :swarm, node_blacklist: ["debug@127.0.0.1"], debug: false
 
@@ -12,9 +12,12 @@ config :libcluster,
   topologies: [
     example: [
       # The selected clustering strategy. Required.
-      strategy: Cluster.Strategy.Epmd,
+      strategy: Cluster.Strategy.Kubernetes,
       # Configuration for the provided strategy. Optional.
-      config: [hosts: [:"node1@127.0.0.1", :"node2@127.0.0.1", :"node3@127.0.0.1"]]
+      config: [
+        kubernetes_node_basename: System.get_env("MY_POD_NAMESPACE") || "${MY_POD_NAMESPACE}",
+        kubernetes_selector: "app=job-webserver"
+      ]
     ]
   ]
 

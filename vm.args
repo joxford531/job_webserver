@@ -1,0 +1,4 @@
+## Name of the node
+-name ${MY_POD_NAMESPACE}@${MY_POD_IP}
+## Cookie for distributed erlang
+-setcookie monsterAndStuff
