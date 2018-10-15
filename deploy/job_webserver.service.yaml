@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: job-webserver-svc
+  labels:
+    app: job-webserver
+spec:
+  ports:
+  - port: 4000
+    targetPort: 4000
+    protocol: TCP
+    name: http
+  selector:
+    app: job-webserver
+  type: LoadBalancer

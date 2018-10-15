@@ -1,0 +1,30 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: job-webserver
+spec:
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        app: job-webserver
+    spec:
+      serviceAccountName: serviceaccount-name
+      containers:
+      - name: job-webserver
+        image: joxford/job_webserver:latest
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 4000
+        args: ["foreground"]
+        env:
+        - name: MY_POD_NAMESPACE
+          value: prod
+        - name: MY_POD_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
+        - name: MY_POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
