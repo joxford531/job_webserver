@@ -28,7 +28,8 @@ config :job_webserver, JobWebserver.Repo,
   database: "job_dev",
   username: "root",
   password: "mysql",
-  hostname: "localhost",
+  hostname: System.get_env("HOST_IP"),
+  port: 32002,
   pool_size: 10
 
 

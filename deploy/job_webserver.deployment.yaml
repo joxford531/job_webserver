@@ -18,6 +18,10 @@ spec:
         - containerPort: 4000
         args: ["foreground"]
         env:
+        - name: HOST_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.hostIP
         - name: MY_POD_NAMESPACE
           value: prod
         - name: MY_POD_IP

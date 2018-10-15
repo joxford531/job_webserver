@@ -1,0 +1,13 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: local-db-svc
+spec:
+  selector:
+    app: local-db
+  ports:
+  - protocol: TCP
+    port: 3306
+    targetPort: 3306
+    nodePort: 32002
+  type: NodePort
