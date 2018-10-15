@@ -27,6 +27,6 @@ RUN \
 
 WORKDIR /opt/job_webserver
 
-USER default
+# USER default
 
 ENTRYPOINT ["./bin/job_webserver"]
