@@ -13,7 +13,7 @@ defmodule JobWebserver.Router do
   get "/hello" do
     conn
     |> Plug.Conn.put_resp_content_type("text/plain")
-    |> Plug.Conn.send_resp(200, "hello world")
+    |> Plug.Conn.send_resp(200, "hello from #{Node.self()}")
   end
 
   post "/post" do

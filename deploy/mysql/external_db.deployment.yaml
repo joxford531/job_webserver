@@ -36,11 +36,10 @@ spec:
         ports:
         - containerPort: 3306
           name: local-db
-        workingDir: "/var/lib/mysql"
         volumeMounts:
         - mountPath: "/var/lib/mysql"
           name: mysql-persist
       volumes:
       - name: mysql-persist
-        hostPath:
-          path: "/var/lib/mysql"
+        persistentVolumeClaim:
+          claimName: mysql-pv-claim

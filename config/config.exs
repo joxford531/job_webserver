@@ -4,7 +4,7 @@ use Mix.Config
 
 config :job_webserver, http_port: 4000
 
-config :logger, level: :info
+config :logger, level: :debug
 
 config :swarm, node_blacklist: ["debug@127.0.0.1"], debug: false
 
@@ -28,8 +28,8 @@ config :job_webserver, JobWebserver.Repo,
   database: "job_dev",
   username: "root",
   password: "mysql",
-  hostname: System.get_env("HOST_IP"),
-  port: 32002,
+  hostname: "local-db-svc",
+  port: 3306,
   pool_size: 10
 
 
