@@ -26,7 +26,7 @@ defmodule JobWebserver.MixProject do
       {:cowboy, "~> 1.1"},
       {:plug, "~> 1.4"},
       {:libcluster, "~> 3.0"},
-      {:swarm, "~> 3.1"},
+      {:swarm, "~> 3.3"},
       {:ecto, "~> 2.2.10"},
       {:mariaex, "~> 0.8.2"},
       {:poison, "~> 3.1"},

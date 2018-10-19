@@ -7,7 +7,7 @@ request = function()
 
   wrk.method = "POST"
   wrk.headers["Content-Type"] = "application/json; charset=utf_8"
-  wrk.body = '{"site":"'..site..'","unitCode":"U01","time":"2018-10-05T21:'..minute..':00-04:00","command":"TM"}'
+  wrk.body = '{"site":"'..site..'","unitCode":"U01","time":"2018-12-05T21:'..minute..':00-04:00","command":"TM"}'
   path = "/post"
 
   return wrk.format("POST", path)

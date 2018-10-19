@@ -16,6 +16,11 @@ defmodule JobWebserver.Router do
     |> Plug.Conn.send_resp(200, "hello from #{Node.self()}")
   end
 
+  get "/healthz" do
+    JobWebserver.Cache.server_healthy?("health_check")
+      |> handle_health_check(conn)
+  end
+
   post "/post" do
     {:ok, body, conn} = Plug.Conn.read_body(conn)
     body = Poison.decode!(body)
@@ -40,19 +45,25 @@ defmodule JobWebserver.Router do
     |> Plug.Conn.send_resp(404, "not found")
   end
 
-  def handle_job_error(conn, {:error, reason}) do
+  defp handle_job_error(conn, {:error, reason}) do
     conn
       |> Plug.Conn.put_resp_content_type("text/plain")
       |> Plug.Conn.send_resp(422, "error: #{inspect(reason)}")
   end
 
-  def handle_job_created(conn, result) do
+  defp handle_job_created(conn, result) do
     conn
       |> Plug.Conn.put_resp_content_type("text/plain")
       |> Plug.Conn.send_resp(201, "created: #{inspect(result)}")
   end
 
-  def hash_job_name(body) do
+  defp handle_health_check(_, conn) do
+    conn
+      |> Plug.Conn.put_resp_content_type("text/plain")
+      |> Plug.Conn.send_resp(200, "Node healthy")
+  end
+
+  defp hash_job_name(body) do
     name = body["site"] <> body["unitCode"] <> body["command"] <> body["time"]
     Base.encode16(:crypto.hash(:sha256, name))
   end

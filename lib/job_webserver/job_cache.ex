@@ -17,6 +17,12 @@ defmodule JobWebserver.Cache do
     existing_process(job_name) || new_process(job_name, job)
   end
 
+  def server_healthy?(job_name) do
+    case JobWebserver.JobServer.whereis(job_name) do # if we get a response then Swarm is properly connected on node
+      _ -> true
+    end
+  end
+
   defp existing_process(job_name) do
     JobWebserver.JobServer.whereis(job_name) # if not registered will return nil which is treated as falsy
   end

@@ -11,7 +11,6 @@ COPY config ./config
 COPY lib ./lib
 COPY priv ./priv
 COPY mix.exs .
-COPY mix.lock .
 COPY vm.args .
 RUN \
     mix do deps.get, deps.compile && \
@@ -27,6 +26,6 @@ RUN \
 
 WORKDIR /opt/job_webserver
 
-# USER default
+USER default
 
 ENTRYPOINT ["./bin/job_webserver"]

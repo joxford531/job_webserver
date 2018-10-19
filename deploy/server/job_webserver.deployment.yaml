@@ -3,7 +3,13 @@ kind: Deployment
 metadata:
   name: job-webserver
 spec:
-  replicas: 3
+  replicas: 5
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+  minReadySeconds: 5
   template:
     metadata:
       labels:
@@ -14,6 +20,12 @@ spec:
       - name: job-webserver
         image: joxford/job_webserver:latest
         imagePullPolicy: Never
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 4000
+          initialDelaySeconds: 30
+          timeoutSeconds: 5
         ports:
         - containerPort: 4000
         args: ["foreground"]
