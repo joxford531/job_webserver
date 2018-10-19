@@ -15,7 +15,7 @@ defmodule JobWebserver.MixProject do
   # Run "mix help compile.app" to learn about applications.
   def application do
     [
-      extra_applications: [:logger, :cowboy, :plug, :poison, :timex, :timex_ecto],
+      extra_applications: [:logger, :cowboy, :plug, :poison, :timex, :timex_ecto, :runtime_tools],
       mod: {JobWebserver.Application, []}
     ]
   end
@@ -26,7 +26,7 @@ defmodule JobWebserver.MixProject do
       {:cowboy, "~> 1.1"},
       {:plug, "~> 1.4"},
       {:libcluster, "~> 3.0"},
-      {:swarm, "~> 3.3"},
+      {:swarm, "~> 3.1"},
       {:ecto, "~> 2.2.10"},
       {:mariaex, "~> 0.8.2"},
       {:poison, "~> 3.1"},

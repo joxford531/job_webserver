@@ -4,6 +4,8 @@ metadata:
   name: job-webserver-svc
   labels:
     app: job-webserver
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
 spec:
   ports:
   - port: 4000
