@@ -23,7 +23,7 @@ defmodule JobWebserver.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:cowboy, "~> 1.1"},
+      {:plug_cowboy, "~> 1.0"},
       {:plug, "~> 1.4"},
       {:libcluster, "~> 3.0"},
       {:swarm, "~> 3.3"},

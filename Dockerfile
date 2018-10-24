@@ -11,6 +11,7 @@ COPY config ./config
 COPY lib ./lib
 COPY priv ./priv
 COPY mix.exs .
+COPY mix.lock .
 COPY vm.args .
 RUN \
     mix do deps.get, deps.compile && \
