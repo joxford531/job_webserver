@@ -13,6 +13,10 @@ defmodule JobWebserver.Cache do
     }
   end
 
+  def kill_node_jobs() do
+    JobWebserver.JobServer.kill_node_jobs()
+  end
+
   def server_process(job_name, %{"site" => _, "unitCode" => _, "time" => _, "command" => _} = job) do
     existing_process(job_name) || new_process(job_name, job)
   end

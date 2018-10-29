@@ -2,7 +2,9 @@ defmodule JobWebserver.JobServer do
   use GenServer
 
   def start_link({job_name, %{"site" => _, "unitCode" => _, "time" => _, "command" => _} = job}) do
-    Swarm.register_name({__MODULE__, job_name}, __MODULE__, :start, [{job_name, job}])
+    {:ok, pid} = Swarm.register_name({__MODULE__, job_name}, __MODULE__, :start, [{job_name, job}])
+    Swarm.join(Node.self(), pid)
+    {:ok, pid}
   end
 
   def start({job_name, job}) do
@@ -14,8 +16,18 @@ defmodule JobWebserver.JobServer do
     store_job(job_name, job)
     {
       :ok,
-      {job_name, job["time"]}
+      {job_name, job}
     }
+  end
+
+  def kill_node_jobs() do
+    # TODO: Enum.each through jobs on this node and kill them, ensure they spawn on
+    # other Cluster nodes
+
+    # case Swarm.whereis_name({__MODULE__, job_name}) do
+    #   :undefined -> {:error, {:no_such_job, job_name}}
+    #   pid -> Process.exit(pid, :remove)
+    # end
   end
 
   def whereis(job_name) do
@@ -24,6 +36,12 @@ defmodule JobWebserver.JobServer do
       _ -> job_name # returns a pid if registered, but we want to return job_name
     end
   end
+
+  # def handle_cast({:move_job}, _, {job_name, _job}) do
+  #   Swarm.leave(Node.self(), self())
+  #   Swarm.unregister_name({__MODULE__, job_name})
+  #   # TODO figure out how to register on different node
+  # end
 
   def handle_cast({:swarm, :end_handoff, _old_state}, state) do
     IO.puts("end handoff")
@@ -36,7 +54,6 @@ defmodule JobWebserver.JobServer do
 
   def handle_call({:swarm, :begin_handoff}, _from, state) do
     IO.puts("Begin handoff")
-
     {:reply, {:resume, state}, state}
   end
 
@@ -44,13 +61,13 @@ defmodule JobWebserver.JobServer do
     {:stop, :shutdown, state}
   end
 
-  def handle_info(:perform, {job_name, fire_time}) do
+  def handle_info(:perform, {job_name, job}) do
     IO.puts("firing job! - #{job_name}")
 
     JobWebserver.Database.find_job(job_name)
     |> JobWebserver.Database.delete_job()
 
-    {:stop, :normal, {job_name, fire_time}}
+    {:stop, :normal, {job_name, job}}
   end
 
   defp schedule_job(%{"site" => _, "unitCode" => _, "time" => _, "command" => _} = job) do

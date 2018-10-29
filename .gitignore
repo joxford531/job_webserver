@@ -27,3 +27,5 @@ erl_crash.dump
 /persist/
 
 /.elixir_ls/
+
+strategy.exs

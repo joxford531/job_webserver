@@ -27,6 +27,8 @@ RUN \
 
 WORKDIR /opt/job_webserver
 
+RUN apk add curl
+
 USER default
 
 ENTRYPOINT ["./bin/job_webserver"]
