@@ -2,12 +2,14 @@ defmodule JobWebserver.ReadDbJobs do
   use Task
 
   def start_link(_arg) do
-    Task.start_link(__MODULE__, :start, [])
+    Task.start_link(__MODULE__, :loop, [])
   end
 
-  def start() do
+  def loop() do
     # cluster wide lock that will retry a small number of times
+    Process.sleep(:timer.seconds(60))
     :global.trans({:server_startup, self()}, &run/0, Node.list([:this, :visible]), 3)
+    loop()
   end
 
   def run() do

@@ -21,8 +21,14 @@ defmodule JobWebserver.JobServer do
   end
 
   def kill_node_jobs() do
+    IO.puts("Current node list during termination: #{IO.puts(inspect(Node.list()))}")
+    IO.puts("Swarm members of this node: #{inspect(Swarm.members(Node.self()))}")
+
     # TODO: Enum.each through jobs on this node and kill them, ensure they spawn on
     # other Cluster nodes
+
+    Swarm.members(Node.self())
+    |> Enum.each(fn(pid) -> Process.exit(pid, :remove) end)
 
     # case Swarm.whereis_name({__MODULE__, job_name}) do
     #   :undefined -> {:error, {:no_such_job, job_name}}
