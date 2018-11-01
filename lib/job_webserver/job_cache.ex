@@ -13,8 +13,16 @@ defmodule JobWebserver.Cache do
     }
   end
 
-  def server_process(job_name, %{"site" => _, "unitCode" => _, "time" => _, "command" => _} = job) do
+  def create_server_process(%{"site" => _, "unitCode" => _, "time" => _, "command" => _} = job) do
+    job_name = hash_job_name(job)
     existing_process(job_name) || new_process(job_name, job)
+  end
+
+  def update_server_process(existing_job_name, %{"site" => _, "unitCode" => _, "time" => _, "command" => _} = new_job) do
+    case JobWebserver.JobServer.whereis_pid(existing_job_name) do
+      nil -> {:error, "no such job exists"}
+      pid -> update_process(pid, new_job)
+    end
   end
 
   def server_healthy?(job_name) do
@@ -36,5 +44,15 @@ defmodule JobWebserver.Cache do
       {:error, {:already_registered, _}} -> job_name
       {:error, {:invalid_return, _}} -> {:error, "time not valid or in the past"}
     end
+  end
+
+  defp update_process(pid, new_job) do
+    JobWebserver.JobServer.remove_job(pid)
+    new_process(hash_job_name(new_job), new_job)
+  end
+
+  defp hash_job_name(body) do
+    name = body["site"] <> body["unitCode"] <> body["command"] <> body["time"]
+    Base.encode16(:crypto.hash(:sha256, name))
   end
 end

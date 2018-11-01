@@ -31,18 +31,27 @@ defmodule JobWebserver.Router do
     {:ok, body, conn} = Plug.Conn.read_body(conn)
     body = Poison.decode!(body)
 
-    result =
-      hash_job_name(body)
-      |> JobWebserver.Cache.server_process(body)
+    result = JobWebserver.Cache.create_server_process(body)
 
     case result do
       {:error, _} -> handle_job_error(conn, result)
-      _ -> handle_job_created(conn, result)
+      _ -> handle_job_create(conn, result)
     end
 
     conn
       |> Plug.Conn.put_resp_content_type("text/plain")
       |> Plug.Conn.send_resp(201, "created: #{inspect(result)}")
+  end
+
+  put "/update" do
+    {:ok, body, conn} = Plug.Conn.read_body(conn)
+    body = Poison.decode!(body)
+
+    case JobWebserver.Cache.update_server_process(body["trigger_name"], body) do
+      {:error, reason} -> handle_job_error(conn, {:error, reason})
+      _ -> handle_job_update(conn, body)
+    end
+
   end
 
   match _ do
@@ -57,20 +66,21 @@ defmodule JobWebserver.Router do
       |> Plug.Conn.send_resp(422, "error: #{inspect(reason)}")
   end
 
-  defp handle_job_created(conn, result) do
+  defp handle_job_create(conn, result) do
     conn
       |> Plug.Conn.put_resp_content_type("text/plain")
       |> Plug.Conn.send_resp(201, "created: #{inspect(result)}")
+  end
+
+  defp handle_job_update(conn, result) do
+    conn
+      |> Plug.Conn.put_resp_content_type("text/plain")
+      |> Plug.Conn.send_resp(201, "updated: #{inspect(result)}")
   end
 
   defp handle_health_check(_, conn) do
     conn
       |> Plug.Conn.put_resp_content_type("text/plain")
       |> Plug.Conn.send_resp(200, "Node healthy")
-  end
-
-  defp hash_job_name(body) do
-    name = body["site"] <> body["unitCode"] <> body["command"] <> body["time"]
-    Base.encode16(:crypto.hash(:sha256, name))
   end
 end

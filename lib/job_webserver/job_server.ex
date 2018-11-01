@@ -10,18 +10,29 @@ defmodule JobWebserver.JobServer do
   end
 
   def init({job_name, job}) do
-    schedule_job(job)
+    timer_ref = schedule_job(job)
     store_job(job_name, job)
     {
       :ok,
-      {job_name, job}
+      {job_name, job, timer_ref}
     }
+  end
+
+  def remove_job(pid) do
+    GenServer.call(pid, {:terminate})
   end
 
   def whereis(job_name) do
     case Swarm.whereis_name({__MODULE__, job_name}) do
       :undefined -> nil
       _ -> job_name # returns a pid if registered, but we want to return job_name
+    end
+  end
+
+  def whereis_pid(job_name) do
+    case Swarm.whereis_name({__MODULE__, job_name}) do
+      :undefined -> nil
+      pid -> pid
     end
   end
 
@@ -39,22 +50,28 @@ defmodule JobWebserver.JobServer do
     {:reply, {:resume, state}, state}
   end
 
-  def handle_call({:terminate}, _from, {job_name, job}) do
+  def handle_call({:terminate}, _from, {job_name, job, timer_ref}) do
     Swarm.unregister_name(job_name)
-    {:stop, :normal, {job_name, job}}
+    Process.cancel_timer(timer_ref)
+    delete_job(job_name)
+    {:stop, :normal, {job_name, job, timer_ref}}
   end
 
   def handle_info({:swarm, :die}, state) do
     {:stop, :shutdown, state}
   end
 
-  def handle_info(:perform, {job_name, job}) do
+  def handle_info(:perform, {job_name, job, timer_ref}) do
     IO.puts("firing job! - #{job_name}")
 
+    delete_job(job_name)
+
+    {:stop, :normal, {job_name, job, timer_ref}}
+  end
+
+  defp delete_job(job_name) do
     JobWebserver.Database.find_job(job_name)
     |> JobWebserver.Database.delete_job()
-
-    {:stop, :normal, {job_name, job}}
   end
 
   defp schedule_job(%{"site" => _, "unitCode" => _, "time" => _, "command" => _} = job) do

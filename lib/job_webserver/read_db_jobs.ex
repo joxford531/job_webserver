@@ -42,6 +42,6 @@ defmodule JobWebserver.ReadDbJobs do
       "time" => Timex.format!(job.time, "{ISO:Extended}"),
       "command" => job.command
     }
-    JobWebserver.Cache.server_process(job.trigger_name, mapped)
+    JobWebserver.Cache.create_server_process(mapped)
   end
 end
