@@ -22,7 +22,6 @@ defmodule JobWebserver.Router do
   end
 
   get "/shutdown" do
-    JobWebserver.Cache.kill_node_jobs()
     conn
     |> Plug.Conn.put_resp_content_type("text/plain")
     |> Plug.Conn.send_resp(200, "shutdown called by #{to_string(:inet_parse.ntoa(conn.remote_ip))}")

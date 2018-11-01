@@ -2,9 +2,7 @@ defmodule JobWebserver.JobServer do
   use GenServer
 
   def start_link({job_name, %{"site" => _, "unitCode" => _, "time" => _, "command" => _} = job}) do
-    {:ok, pid} = Swarm.register_name({__MODULE__, job_name}, __MODULE__, :start, [{job_name, job}])
-    Swarm.join(Node.self(), pid)
-    {:ok, pid}
+    Swarm.register_name({__MODULE__, job_name}, __MODULE__, :start, [{job_name, job}])
   end
 
   def start({job_name, job}) do
@@ -20,34 +18,12 @@ defmodule JobWebserver.JobServer do
     }
   end
 
-  def kill_node_jobs() do
-    IO.puts("Current node list during termination: #{IO.puts(inspect(Node.list()))}")
-    IO.puts("Swarm members of this node: #{inspect(Swarm.members(Node.self()))}")
-
-    # TODO: Enum.each through jobs on this node and kill them, ensure they spawn on
-    # other Cluster nodes
-
-    Swarm.members(Node.self())
-    |> Enum.each(fn(pid) -> Process.exit(pid, :remove) end)
-
-    # case Swarm.whereis_name({__MODULE__, job_name}) do
-    #   :undefined -> {:error, {:no_such_job, job_name}}
-    #   pid -> Process.exit(pid, :remove)
-    # end
-  end
-
   def whereis(job_name) do
     case Swarm.whereis_name({__MODULE__, job_name}) do
       :undefined -> nil
       _ -> job_name # returns a pid if registered, but we want to return job_name
     end
   end
-
-  # def handle_cast({:move_job}, _, {job_name, _job}) do
-  #   Swarm.leave(Node.self(), self())
-  #   Swarm.unregister_name({__MODULE__, job_name})
-  #   # TODO figure out how to register on different node
-  # end
 
   def handle_cast({:swarm, :end_handoff, _old_state}, state) do
     IO.puts("end handoff")
@@ -61,6 +37,11 @@ defmodule JobWebserver.JobServer do
   def handle_call({:swarm, :begin_handoff}, _from, state) do
     IO.puts("Begin handoff")
     {:reply, {:resume, state}, state}
+  end
+
+  def handle_call({:terminate}, _from, {job_name, job}) do
+    Swarm.unregister_name(job_name)
+    {:stop, :normal, {job_name, job}}
   end
 
   def handle_info({:swarm, :die}, state) do
