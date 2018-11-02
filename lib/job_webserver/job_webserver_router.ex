@@ -37,10 +37,6 @@ defmodule JobWebserver.Router do
       {:error, _} -> handle_job_error(conn, result)
       _ -> handle_job_create(conn, result)
     end
-
-    conn
-      |> Plug.Conn.put_resp_content_type("text/plain")
-      |> Plug.Conn.send_resp(201, "created: #{inspect(result)}")
   end
 
   put "/update" do
