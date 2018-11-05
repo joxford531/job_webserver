@@ -52,7 +52,12 @@ defmodule JobWebserver.Cache do
   end
 
   defp hash_job_name(body) do
-    name = body["site"] <> body["unitCode"] <> body["command"] <> body["time"]
+    time =
+      body["time"]
+      |> Timex.parse!("{ISO:Extended:Z}")
+      |> Timex.format!("{ISO:Extended:Z}")
+    # we're converting to zulu time so that DB read job hashes the same since time is stored in UTC in DB
+    name = body["site"] <> body["unitCode"] <> body["command"] <> time
     Base.encode16(:crypto.hash(:sha256, name))
   end
 end

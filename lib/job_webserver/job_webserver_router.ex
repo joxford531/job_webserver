@@ -43,9 +43,11 @@ defmodule JobWebserver.Router do
     {:ok, body, conn} = Plug.Conn.read_body(conn)
     body = Poison.decode!(body)
 
-    case JobWebserver.Cache.update_server_process(body["trigger_name"], body) do
+    result = JobWebserver.Cache.update_server_process(body["trigger_name"], body)
+
+    case result do
       {:error, reason} -> handle_job_error(conn, {:error, reason})
-      _ -> handle_job_update(conn, body)
+      _ -> handle_job_update(conn, result)
     end
 
   end
@@ -65,13 +67,13 @@ defmodule JobWebserver.Router do
   defp handle_job_create(conn, result) do
     conn
       |> Plug.Conn.put_resp_content_type("text/plain")
-      |> Plug.Conn.send_resp(201, "created: #{inspect(result)}")
+      |> Plug.Conn.send_resp(201, "created trigger: #{inspect(result)}")
   end
 
   defp handle_job_update(conn, result) do
     conn
       |> Plug.Conn.put_resp_content_type("text/plain")
-      |> Plug.Conn.send_resp(201, "updated: #{inspect(result)}")
+      |> Plug.Conn.send_resp(201, "updated, new trigger: #{inspect(result)}")
   end
 
   defp handle_health_check(_, conn) do

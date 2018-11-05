@@ -1,5 +1,5 @@
 defmodule JobWebserver.JobServer do
-  use GenServer
+  use GenServer, restart: :temporary
 
   def start_link({job_name, %{"site" => _, "unitCode" => _, "time" => _, "command" => _} = job}) do
     Swarm.register_name({__MODULE__, job_name}, __MODULE__, :start, [{job_name, job}])
@@ -19,7 +19,7 @@ defmodule JobWebserver.JobServer do
   end
 
   def remove_job(pid) do
-    GenServer.call(pid, {:terminate})
+    GenServer.cast(pid, {:terminate})
   end
 
   def whereis(job_name) do
@@ -36,6 +36,13 @@ defmodule JobWebserver.JobServer do
     end
   end
 
+  def handle_cast({:terminate}, {job_name, job, timer_ref}) do
+    Swarm.unregister_name(job_name)
+    Process.cancel_timer(timer_ref)
+    delete_job(job_name)
+    {:stop, :normal, {job_name, job, timer_ref}}
+  end
+
   def handle_cast({:swarm, :end_handoff, _old_state}, state) do
     IO.puts("end handoff")
     {:noreply, state}
@@ -48,13 +55,6 @@ defmodule JobWebserver.JobServer do
   def handle_call({:swarm, :begin_handoff}, _from, state) do
     IO.puts("Begin handoff")
     {:reply, {:resume, state}, state}
-  end
-
-  def handle_call({:terminate}, _from, {job_name, job, timer_ref}) do
-    Swarm.unregister_name(job_name)
-    Process.cancel_timer(timer_ref)
-    delete_job(job_name)
-    {:stop, :normal, {job_name, job, timer_ref}}
   end
 
   def handle_info({:swarm, :die}, state) do
