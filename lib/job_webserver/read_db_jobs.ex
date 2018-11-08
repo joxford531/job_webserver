@@ -1,4 +1,4 @@
-defmodule JobWebserver.ReadDbJobs do
+defmodule JobWebserver.CheckJobs do
   use Task
 
   def start_link(_arg) do
@@ -8,7 +8,7 @@ defmodule JobWebserver.ReadDbJobs do
   def loop() do
     # cluster wide lock that will retry a small number of times
     Process.sleep(:timer.seconds(60))
-    :global.trans({:server_startup, self()}, &run/0, Node.list([:this, :visible]), 3)
+    :global.trans({:db_job_check, self()}, &run/0, Node.list([:this, :visible]), 3)
     loop()
   end
 
@@ -23,6 +23,7 @@ defmodule JobWebserver.ReadDbJobs do
       |> Kernel./(1_000)
 
     IO.puts("Read DB Jobs finished in #{round(time_elapsed)}ms")
+    check_swarm_jobs()
   end
 
   defp get_all_jobs() do
@@ -43,5 +44,11 @@ defmodule JobWebserver.ReadDbJobs do
       "command" => job.command
     }
     JobWebserver.Cache.create_server_process(mapped)
+  end
+
+  defp check_swarm_jobs() do
+    Swarm.registered()
+    |> Stream.filter(fn {{_, _}, pid} -> !Enum.member?(Node.list([:this, :visible]), node(pid)) end)
+    |> Enum.each(fn {{module, job_name}, _} -> Swarm.unregister_name({module, job_name}) end)
   end
 end

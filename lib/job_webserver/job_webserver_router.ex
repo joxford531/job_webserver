@@ -18,10 +18,13 @@ defmodule JobWebserver.Router do
 
   get "/healthz" do
     JobWebserver.Cache.server_healthy?("health_check")
-      |> handle_health_check(conn)
+    |> handle_health_check(conn)
   end
 
   get "/shutdown" do
+    # try to grab the db_job_check lock which will be released when the node dies
+    :global.set_lock({:db_job_check, self()}, Node.list([:this, :visible]), 5)
+
     conn
     |> Plug.Conn.put_resp_content_type("text/plain")
     |> Plug.Conn.send_resp(200, "shutdown called by #{to_string(:inet_parse.ntoa(conn.remote_ip))}")

@@ -18,6 +18,10 @@ defmodule JobWebserver.Cache do
     existing_process(job_name) || new_process(job_name, job)
   end
 
+  def kill_node_jobs() do
+    JobWebserver.JobServer.kill_node_jobs();
+  end
+
   def update_server_process(existing_job_name, %{"site" => _, "unitCode" => _, "time" => _, "command" => _} = new_job) do
     case JobWebserver.JobServer.whereis_pid(existing_job_name) do
       nil -> {:error, "no such job exists"}

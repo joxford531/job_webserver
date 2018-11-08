@@ -18,6 +18,13 @@ defmodule JobWebserver.JobServer do
     }
   end
 
+  def kill_node_jobs() do
+    Swarm.registered()
+    |> Stream.map(fn {{_,_}, pid} -> pid end)
+    |> Stream.filter(fn pid -> node(pid) == Node.self() end)
+    |> Enum.each(fn pid -> Process.exit(pid, :remove) end)
+  end
+
   def remove_job(pid) do
     GenServer.cast(pid, {:terminate})
   end
@@ -37,7 +44,7 @@ defmodule JobWebserver.JobServer do
   end
 
   def handle_cast({:terminate}, {job_name, job, timer_ref}) do
-    Swarm.unregister_name(job_name)
+    Swarm.unregister_name({__MODULE__, job_name})
     Process.cancel_timer(timer_ref)
     delete_job(job_name)
     {:stop, :normal, {job_name, job, timer_ref}}
