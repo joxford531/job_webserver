@@ -34,6 +34,21 @@ spec:
         - containerPort: 4000
         args: ["foreground"]
         env:
+        - name: JOB_DB_USER
+          valueFrom:
+            secretKeyRef:
+              name: db-conn
+              key: username
+        - name: JOB_DB_PW
+          valueFrom:
+            secretKeyRef:
+              name: db-conn
+              key: password
+        - name: JOB_DB_HOST
+          valueFrom:
+            secretKeyRef:
+              name: db-conn
+              key: host
         - name: HOST_IP
           valueFrom:
             fieldRef:
