@@ -1,7 +1,7 @@
 -- wrk -t4 -c20 -d30s --latency -s wrk.lua http://localhost:4000
 
 request = function()
-  minute = math.random(59)
+  second = math.random(59)
 
   if second < 10 then second = "0" .. second end
 
@@ -13,4 +13,4 @@ request = function()
   path = "/post"
 
   return wrk.format("POST", path)
-end2
+end

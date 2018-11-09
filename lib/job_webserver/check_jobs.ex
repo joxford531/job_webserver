@@ -47,6 +47,7 @@ defmodule JobWebserver.CheckJobs do
   end
 
   defp check_swarm_jobs() do
+    # if any jobs are registered with swarm but are members of nodes that have been terminated then remove them
     Swarm.registered()
     |> Stream.filter(fn {{_, _}, pid} -> !Enum.member?(Node.list([:this, :visible]), node(pid)) end)
     |> Enum.each(fn {{module, job_name}, _} -> Swarm.unregister_name({module, job_name}) end)
