@@ -26,9 +26,9 @@ config :job_webserver, :ecto_repos, [JobWebserver.Repo]
 config :job_webserver, JobWebserver.Repo,
   adapter: Ecto.Adapters.MySQL,
   database: "job_dev",
-  username: System.get_env("JOB_DB_USER") || "root",
-  password: System.get_env("JOB_DB_PW") || "mysql",
-  hostname: System.get_env("JOB_DB_HOST") || "localhost",
+  username: System.get_env("JOB_DB_USER") || "${JOB_DB_USER}" || "root",
+  password: System.get_env("JOB_DB_PW") || "${JOB_DB_PW}" || "mysql",
+  hostname: System.get_env("JOB_DB_HOST") || "${JOB_DB_HOST}" || "localhost",
   port: 3306,
   pool_size: 10
 
