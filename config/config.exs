@@ -6,18 +6,14 @@ config :job_webserver, http_port: 4000
 
 config :logger, level: :debug
 
-config :swarm, node_blacklist: ["debug@127.0.0.1"], debug: false
+config :swarm,
+  node_whitelist: ["a@127.0.0.1", "b@127.0.0.1", "c@127.0.0.1"]
 
 config :libcluster,
   topologies: [
     example: [
-      # The selected clustering strategy. Required.
-      strategy: Cluster.Strategy.Kubernetes,
-      # Configuration for the provided strategy. Optional.
-      config: [
-        kubernetes_node_basename: System.get_env("MY_POD_NAMESPACE") || "${MY_POD_NAMESPACE}",
-        kubernetes_selector: "app=job-webserver"
-      ]
+      strategy: Cluster.Strategy.Epmd,
+      config: [hosts: [:"debug@127.0.0.1", :"a@127.0.0.1", :"b@127.0.0.1", :"c@127.0.0.1"]]
     ]
   ]
 
@@ -26,9 +22,9 @@ config :job_webserver, :ecto_repos, [JobWebserver.Repo]
 config :job_webserver, JobWebserver.Repo,
   adapter: Ecto.Adapters.MySQL,
   database: "job_dev",
-  username: System.get_env("JOB_DB_USER") || "${JOB_DB_USER}" || "root",
-  password: System.get_env("JOB_DB_PW") || "${JOB_DB_PW}" || "mysql",
-  hostname: System.get_env("JOB_DB_HOST") || "${JOB_DB_HOST}" || "localhost",
+  username: "root",
+  password: "mysql",
+  hostname: "localhost",
   port: 3306,
   pool_size: 10
 
